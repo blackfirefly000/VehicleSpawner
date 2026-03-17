@@ -125,7 +125,7 @@ function CreateMenu()
                     print_table(vehicle)
                     local vehicleItem = NativeUI.CreateItem(vehicle["Name"], "Press Enter to Spawn")
                     vehicleItem.Activated = function(sender, item)
-                        SpawnVehicle(vehicle["VehicleModel"],vehicle["NumberPlate"],vehicle["VehicleLivery"])
+                        SpawnVehicle(vehicle["VehicleModel"],vehicle["NumberPlate"],vehicle["VehicleLivery"],vehicle["VehiclePrimaryColor"],vehicle["VehicleSecondaryColor"],vehicle["VehiclePearlescentColor"],vehicle["VehicleWheelColor"],vehicle["VehicleExtras"])
                     end
                     subSubmenu:AddItem(vehicleItem)
                 end
@@ -162,7 +162,7 @@ function notify(text)
     DrawNotification(true, true)
 end
 
-function SpawnVehicle(vehicle,plate,livery)
+function SpawnVehicle(vehicle,plate,livery,primaryColor,secondaryColor,pearlColor,wheelColor,extras)
     local vehicleHash = GetHashKey(vehicle)
 
     RequestModel(vehicleHash)
@@ -191,6 +191,18 @@ function SpawnVehicle(vehicle,plate,livery)
         if (not(plate == nil)) then
             SetVehicleNumberPlateText(spawnedVehicle, plate)
         end
+        if (not(primaryColor == nil) and not(secondaryColor == nil)) then
+            SetVehicleColours(spawnedVehicle, primaryColor, secondaryColor)
+        end
+        if (not(pearlColor == nil) and not(wheelColor == nil)) then
+            SetVehicleExtraColours(spawnedVehicle, pearlColor, wheelColor)
+        end
+        if (not(extras == nil)) then
+            for _, Extra in pairs(extras) do
+                SetVehicleExtra(spawnedVehicle, Extra)
+            end
+        end
+        
         notify("Spawned in a " .. vehicle)
     else
         notify("Error: Vehicle could not be spawned.")
