@@ -1,6 +1,9 @@
 _menuPool = NativeUI.CreatePool()
 mainMenu = NativeUI.CreateMenu("Vehicle Spawner", "Spawner By Hamster-Systems")
 _menuPool:Add(mainMenu)
+_menuPool:MouseControlsEnabled (false)
+_menuPool:MouseEdgeEnabled (false)
+_menuPool:ControlDisablingEnabled(false)
 
 -- Load the config file
 function LoadConfigFile(resource, filename)
@@ -23,6 +26,11 @@ local categoryNames = config.subCategoryNames or {}
 local categoryDescriptions = config.categoryDescriptions or {}
 local subcategoryDescriptions = config.subcategoryDescriptions or {}
 local categories = config.categories or {}
+local extras = nil
+local primaryColor = nil
+local secondaryColor = nil
+local pearlColor = nil
+local wheelColor = nil
 
 local isMenuOpen = false
 
@@ -134,6 +142,9 @@ function CreateMenu()
     end
 
     _menuPool:RefreshIndex()
+    _menuPool:MouseControlsEnabled (false)
+    _menuPool:MouseEdgeEnabled (false)
+    _menuPool:ControlDisablingEnabled(false)
     isMenuOpen = true -- Set isMenuOpen to true when creating the menu
 end
 
@@ -176,11 +187,12 @@ function SpawnVehicle(vehicle,plate,livery,primaryColor,secondaryColor,pearlColo
     
     -- Check if the player is in a vehicle
     if IsPedInAnyVehicle(playerPed, false) then
-        notify("Error: Please exit the vehicle before spawning another.")
-        return
+        SetEntityAsMissionEntity(GetVehiclePedIsIn(playerPed, false), false, false)
+        DeleteVehicle(GetVehiclePedIsIn(playerPed, false))
+        Citizen.Wait(50)
     end
 
-    local spawnedVehicle = CreateVehicle(vehicleHash, x + 2, y + 2, z + 1, GetEntityHeading(playerPed), true, false)
+    local spawnedVehicle = CreateVehicle(vehicleHash, x, y, z, GetEntityHeading(playerPed), true, false)
 
     if DoesEntityExist(spawnedVehicle) then
         SetPedIntoVehicle(playerPed, spawnedVehicle, -1)
@@ -191,17 +203,22 @@ function SpawnVehicle(vehicle,plate,livery,primaryColor,secondaryColor,pearlColo
         if (not(plate == nil)) then
             SetVehicleNumberPlateText(spawnedVehicle, plate)
         end
-        if (not(primaryColor == nil) and not(secondaryColor == nil)) then
+        if (not(primaryColor == nil)) or (not(secondaryColor == nil)) then
             SetVehicleColours(spawnedVehicle, primaryColor, secondaryColor)
         end
-        if (not(pearlColor == nil) and not(wheelColor == nil)) then
+        if (not(pearlColor == nil)) or (not(wheelColor == nil)) then
             SetVehicleExtraColours(spawnedVehicle, pearlColor, wheelColor)
         end
+        SetVehicleFixed(spawnedVehicle)
         if (not(extras == nil)) then
-            for _, Extra in pairs(extras) do
-                SetVehicleExtra(spawnedVehicle, Extra)
+            for i = 1, 14 do
+                SetVehicleExtra(spawnedVehicle, i, 1)
+            end
+            for _, extra in ipairs(extras) do
+                SetVehicleExtra(spawnedVehicle, extra, 0)
             end
         end
+        SetVehicleFixed(spawnedVehicle)
         
         notify("Spawned in a " .. vehicle)
     else
